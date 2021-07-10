@@ -22,6 +22,11 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 
+
+/*All the functions declared inside the SleepDatabaseDao interface should be declared as suspend,
+except the one which returns a LiveData. The feature of a suspend function is that it can suspend
+the execution (pause and resume at a later time) of a coroutine.*/
+
 // Add annotated insert() method  for inserting a single SleepNight
 @Dao
 interface SleepDatabaseDao {
@@ -36,23 +41,23 @@ object and inserts it into the database.
 After we insert a row representing a SleepNight we want to be able to update it.
 For example, with the new end-time or a sleep quality rating.
 */ @Insert
-    fun insert(night: SleepNight)
+    suspend fun insert(night: SleepNight)
 
     /// Annotated update() method for updating a SleepNight.
     @Update
-    fun update(night: SleepNight)
+    suspend fun update(night: SleepNight)
 
     // Add annotated get() method that gets the SleepNight by key
     /*In this query, we instruct the database to select all columns in the
     daily sleep quality table and return the rows where the nightID matches the supplied key.
     Because the key is unique, this will return one sleepNight or null if there isn't one */
     @Query("SELECT * from daily_sleep_quality_table WHERE nightId = :key")
-    fun get(key: Long): SleepNight
+    suspend fun get(key: Long): SleepNight
 
     // Add annotated clear() method and query.
     // SQLite query to delete everything from the daily_sleep_quality_table:
     @Query("DELETE FROM daily_sleep_quality_table")
-    fun clear()
+    suspend fun clear()
 
     // Add annotated getAllNights() method and query.
     //The SQLite query should return all columns from the daily_sleep_quality_table, ordered in
@@ -70,7 +75,7 @@ For example, with the new end-time or a sleep quality rating.
     /*You get tonight by writing a SQLite query that returns the first element of a list of results
      ordered by nightId in descending order. Use LIMIT 1 to return only one element.*/
     @Query("SELECT * FROM daily_sleep_quality_table ORDER BY nightId DESC LIMIT 1")
-    fun getTonight(): SleepNight?
+    suspend fun getTonight(): SleepNight?
 }
 
 
