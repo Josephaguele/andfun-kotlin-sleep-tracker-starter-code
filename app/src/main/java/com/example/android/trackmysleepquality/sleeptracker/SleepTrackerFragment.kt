@@ -22,7 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.example.android.trackmysleepquality.R
+import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
 
 /**
@@ -44,6 +46,22 @@ class SleepTrackerFragment : Fragment() {
         val binding: FragmentSleepTrackerBinding = DataBindingUtil.inflate(
                 inflater, R.layout.fragment_sleep_tracker, container, false)
 
+        // requireNotNull is a kotlin function that throws an illegal argument exception if the value is null.
+        val application = requireNotNull(this.activity).application
+
+        // to get a reference to the DAO of the database, we use
+        val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
+
+        /*Create an instance of the viewModelFactory. You'll need to pass in dataSource
+        as well as application.*/
+        val viewModelFactory = SleepTrackerViewModelFactory(dataSource,application)
+
+        /*Get a reference to the SleepTrackerViewModel. To the ViewModelProvider, specify to use
+         the viewModelFactory and get an instance  of SleepTrackerViewModel::class.java.*/
+        val sleepTrackerViewModel =  ViewModelProvider(
+                this, viewModelFactory).get(SleepTrackerViewModel::class.java)
+
+        
         return binding.root
     }
 }
