@@ -21,7 +21,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 // to make SleepNight a class that room can use to create a table, we need to annotate it with the
-// @Entity annotation. We want to give our table a custom name taht is different from the default of
+// @Entity annotation. We want to give our table a custom name that is different from the default of
 // deriving it from the class name, we do this by adding parameters to the annotation and setting the
 // table name parameter to daily_sleep_quality_table. Changing the table name is optional, but it is
 // a good idea to identify your table with a name that includes "table".
@@ -56,3 +56,6 @@ data class SleepNight(
 
 )
 
+// @Query("SELECT * FROM daily_sleep_quality_table" + "ORDER BY nightId DESC")
+// MEANING
+// select all  entities in the sql table sorted by nightids in descending order.
