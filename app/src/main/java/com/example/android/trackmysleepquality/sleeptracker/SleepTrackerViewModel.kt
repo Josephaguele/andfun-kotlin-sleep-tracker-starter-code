@@ -18,6 +18,7 @@ package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
 import android.provider.SyncStateContract.Helpers.insert
+import android.provider.SyncStateContract.Helpers.update
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -42,19 +43,16 @@ class SleepTrackerViewModel(
     // WE ALSO want to get all the nights in the database when we create the viewModel
     private val nights = database.getAllNights()
 
-  // (01) Create a viewModelJob and override onCleared() for canceling coroutines.
-        /*We use coroutines because among other things, triggering the buttons calls  up our database
-        * operations..and we do not want that to slow down other things.
-        * To manage our coroutines, we need a job. This ViewModelJob allows us to cancel all
-        * coroutines started by this ViewModel when the viewModel when the ViewModel is no longer used
-        * and destroyed so that we don't end up with coroutines that have no where to return to */
-                private var viewModelJob = Job()
 
-    // When the viewModel is destroyed, onCleared is called.
-    // We tell the job to cancel all coroutines.
-    override fun onCleared() {
-        super.onCleared()
-        viewModelJob.cancel()
+    fun onClear() {
+        viewModelScope.launch {
+            clear()
+            tonight.value = null
+        }
+    }
+
+    suspend fun clear() {
+        database.clear()
     }
 
     //To initialize the tonight variable, create an init block and call initializeTonight(), which you'll define in the next step:
@@ -103,7 +101,6 @@ class SleepTrackerViewModel(
 
             //Call insert() to insert it into the database. You will define insert() shortly:
             insert(newNight)
-
             // Set tonight to the new night:
             tonight.value = getTonightFromDatabase()
         }
@@ -117,13 +114,22 @@ class SleepTrackerViewModel(
 
 
     // The scope determines what thread the coroutine will run on and it also needs to know about the job
-    // To get a scope, we ask for an instance of coroutine scope and we pass in the dispatcher and the job.
-    // Our dispatcher is dispatcher.Main, this means coroutines launched in the UI scope will
-    // launch on the main thread.
+
+//    If it hasn't been set yet, set the endTimeMilli to the current system time and call update()
+//    with the night. There are several ways to implement this, and one is shown below:
+    fun onStopTracking() {
+        viewModelScope.launch {
+            val oldNight = tonight.value ?: return@launch
+            oldNight.endTimeMilli = System.currentTimeMillis()
+            update(oldNight)
+        }
+    }
+
+//  Implement update() using the same pattern as insert():
+    private suspend fun update(night: SleepNight) {
+        database.update(night)
+    }
 
 
-//   TODO(05) Add local functions for insert(), update(), and clear().
-//    TODO(06) Implement click handlers for Start, Stop, and Clear buttons using coroutines to do the database
-//     TODO(09) Transform nights into a nightsString using formatNights()
 }
 
