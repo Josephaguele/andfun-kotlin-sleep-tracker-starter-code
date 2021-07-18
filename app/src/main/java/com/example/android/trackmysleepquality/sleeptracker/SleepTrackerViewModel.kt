@@ -19,11 +19,10 @@ package com.example.android.trackmysleepquality.sleeptracker
 import android.app.Application
 import android.provider.SyncStateContract.Helpers.insert
 import android.provider.SyncStateContract.Helpers.update
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
+import com.example.android.trackmysleepquality.formatNights
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -35,14 +34,22 @@ class SleepTrackerViewModel(
         application: Application) : AndroidViewModel(application) {
 
    // Define a variable, tonight, to hold the current night, and make it MutableLiveData:
-    // We need a variable to hold the current night, we make this LiveData because we want to be able
-    // to observe it, MutableLiveData because we want to be able to change it.
+    // We need a variable to hold the current night, we make this LiveData because we want to be able  // to observe it, MutableLiveData because we want to be able to change it.
     private var tonight = MutableLiveData<SleepNight?>()
 
     //Define a variable, nights. Then getAllNights() from the database and assign to the nights variable:
     // WE ALSO want to get all the nights in the database when we create the viewModel
     private val nights = database.getAllNights()
 
+    //Add code to transform nights into a nightsString using the formatNights() function from Util.kt:
+    val nightsString = Transformations.map(nights) { nights ->
+        formatNights(nights, application.resources)
+    }
+
+    //To initialize the tonight variable, create an init block and call initializeTonight(), which you'll define in the next step:
+    init {
+        initializeTonight()
+    }
 
     fun onClear() {
         viewModelScope.launch {
@@ -53,11 +60,6 @@ class SleepTrackerViewModel(
 
     suspend fun clear() {
         database.clear()
-    }
-
-    //To initialize the tonight variable, create an init block and call initializeTonight(), which you'll define in the next step:
-    init {
-        initializeTonight()
     }
 
     /*Inside, get the value for tonight from the database by calling getTonightFromDatabase(),
@@ -71,6 +73,8 @@ class SleepTrackerViewModel(
         }
     }
 
+
+
    /* Implement getTonightFromDatabase(). Define is as a private suspend function that returns a
    nullable SleepNight, if there is no current started sleepNight.
     This leaves you with an error, because you will have to return something.*/
@@ -83,7 +87,6 @@ class SleepTrackerViewModel(
         /* Let the coroutine get tonight from the database. If the start and end times are the not the
         same, meaning, the night has already been completed, return null. Otherwise, return night:*/
         var night = database.getTonight()
-
         if (night?.endTimeMilli != night?.startTimeMilli) {
             night = null
         }
@@ -92,8 +95,7 @@ class SleepTrackerViewModel(
 
     //Implement onStartTracking(), the click handler for the Start button:
     fun onStartTracking()
-    {
-    //    Inside onStartTracking(), launch a coroutine in viewModelScope:
+    { //    Inside onStartTracking(), launch a coroutine in viewModelScope:
         viewModelScope.launch{
            // Inside the coroutine, create a new SleepNight, which captures the current time as
             // the start time:
@@ -113,8 +115,20 @@ class SleepTrackerViewModel(
     }
 
 
-    // The scope determines what thread the coroutine will run on and it also needs to know about the job
+    /*You need to add Navigation, so that when the user taps the STOP button, you navigate to the
+     SleepQualityFragment to collect a quality rating.
+    In SleepTrackerViewModel.kt, in onStopTracking() set a LiveData that changes when you want
+    to navigate. Use encapsulation to expose only a gettable version to the fragment*/
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
 
+    val navigateToSleepQuality: LiveData<SleepNight>
+        get() = _navigateToSleepQuality
+
+    // We add a doneNavigating() function that resets the event.
+    fun doneNavigating() {
+        _navigateToSleepQuality.value = null
+    }
+    // The scope determines what thread the coroutine will run on and it also needs to know about the job
 //    If it hasn't been set yet, set the endTimeMilli to the current system time and call update()
 //    with the night. There are several ways to implement this, and one is shown below:
     fun onStopTracking() {
@@ -122,6 +136,9 @@ class SleepTrackerViewModel(
             val oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
+
+            //In the click handler for the STOP button, onStopTracking(), trigger this navigation
+            _navigateToSleepQuality.value = oldNight
         }
     }
 
@@ -130,6 +147,17 @@ class SleepTrackerViewModel(
         database.update(night)
     }
 
-
+    // (01) Create a viewModelJob and override onCleared() for canceling coroutines.
+    /*We use coroutines because among other things, triggering the buttons calls  up our database
+    * operations..and we do not want that to slow down other things.
+    * To manage our coroutines, we need a job. This ViewModelJob allows us to cancel all
+    * coroutines started by this ViewModel when the viewModel when the ViewModel is no longer used
+    * and destroyed so that we don't end up with coroutines that have no where to return to */
+         private var viewModelJob = Job()
+    // When the viewModel is destroyed, onCleared is called.
+    // We tell the job to cancel all coroutines.
+      override fun onCleared() {
+          super.onCleared()
+          viewModelJob.cancel() }
 }
 
