@@ -50,10 +50,14 @@ class SleepTrackerViewModel(
         initializeTonight()
     }
 
+    /*Executes when the CLEAR button is clicked.*/
     fun onClear() {
         viewModelScope.launch {
             clear()
             tonight.value = null
+
+            // this is to trigger the snack bar event
+            _showSnackbarEvent.value = true
         }
     }
 
@@ -90,6 +94,7 @@ class SleepTrackerViewModel(
         return night
     }
 
+    /*Executes when the STOP button is clicked*/
     //Implement onStartTracking(), the click handler for the Start button:
     fun onStartTracking() { //    Inside onStartTracking(), launch a coroutine in viewModelScope:
         viewModelScope.launch {
@@ -145,7 +150,7 @@ class SleepTrackerViewModel(
     // The state of the variables changes based on the state of tonight, so whenever tonight changes,
     // these variables are updated.  Tonight is null at the beginning,so if that is the case, we
     // want the start button to be visible. If tonight has a value, the stop is visible, and the
-    // clear button should only be visible when we have something to clear. 
+    // clear button should only be visible when we have something to clear.
     val startButtonVisible = Transformations.map(tonight) {
         null == it
     }
@@ -155,6 +160,19 @@ class SleepTrackerViewModel(
     val clearButtonVisible = Transformations.map(nights) {
         it?.isNotEmpty()
     }
+
+    // Use the same pattern as for navigation to set up and trigger a snackbar when the data is cleared.
+    //In the SleepTrackerViewModel, create the encapsulated event:
+    private var _showSnackbarEvent = MutableLiveData<Boolean>()
+
+    val showSnackBarEvent: LiveData<Boolean>
+       get() = _showSnackbarEvent
+
+    fun doneShowingSnackbar() {
+        _showSnackbarEvent.value = false
+    }
+
+
 
     //  Implement update() using the same pattern as insert():
     private suspend fun update(night: SleepNight) {
