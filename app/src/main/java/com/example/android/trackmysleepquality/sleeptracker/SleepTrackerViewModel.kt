@@ -17,8 +17,6 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
-import android.provider.SyncStateContract.Helpers.insert
-import android.provider.SyncStateContract.Helpers.update
 import androidx.lifecycle.*
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
@@ -30,10 +28,11 @@ import kotlinx.coroutines.launch
  * ViewModel for SleepTrackerFragment.
  */
 class SleepTrackerViewModel(
-        val database: SleepDatabaseDao,
-        application: Application) : AndroidViewModel(application) {
+    val database: SleepDatabaseDao,
+    application: Application
+) : AndroidViewModel(application) {
 
-   // Define a variable, tonight, to hold the current night, and make it MutableLiveData:
+    // Define a variable, tonight, to hold the current night, and make it MutableLiveData:
     // We need a variable to hold the current night, we make this LiveData because we want to be able  // to observe it, MutableLiveData because we want to be able to change it.
     private var tonight = MutableLiveData<SleepNight?>()
 
@@ -74,12 +73,10 @@ class SleepTrackerViewModel(
     }
 
 
-
-   /* Implement getTonightFromDatabase(). Define is as a private suspend function that returns a
-   nullable SleepNight, if there is no current started sleepNight.
-    This leaves you with an error, because you will have to return something.*/
-    private suspend fun getTonightFromDatabase():  SleepNight?
-    {   // This is done here because it would take a longer time to complete, hence the need to be
+    /* Implement getTonightFromDatabase(). Define is as a private suspend function that returns a
+    nullable SleepNight, if there is no current started sleepNight.
+     This leaves you with an error, because you will have to return something.*/
+    private suspend fun getTonightFromDatabase(): SleepNight? {   // This is done here because it would take a longer time to complete, hence the need to be
         // done in a coroutine
         // if the start time and end time are the same, then we know that we are continuing with
         // an existing night. If the start time and end time are not the same, then we have no night
@@ -94,10 +91,9 @@ class SleepTrackerViewModel(
     }
 
     //Implement onStartTracking(), the click handler for the Start button:
-    fun onStartTracking()
-    { //    Inside onStartTracking(), launch a coroutine in viewModelScope:
-        viewModelScope.launch{
-           // Inside the coroutine, create a new SleepNight, which captures the current time as
+    fun onStartTracking() { //    Inside onStartTracking(), launch a coroutine in viewModelScope:
+        viewModelScope.launch {
+            // Inside the coroutine, create a new SleepNight, which captures the current time as
             // the start time:
             val newNight = SleepNight()
 
@@ -109,7 +105,7 @@ class SleepTrackerViewModel(
     }
 
     // Define insert() as a private suspend function that takes a SleepNight as its argument:
-    private suspend fun insert(night: SleepNight){
+    private suspend fun insert(night: SleepNight) {
         //For the body of insert(), insert the night into the database:
         database.insert(night)
     }
@@ -128,6 +124,7 @@ class SleepTrackerViewModel(
     fun doneNavigating() {
         _navigateToSleepQuality.value = null
     }
+
     // The scope determines what thread the coroutine will run on and it also needs to know about the job
 //    If it hasn't been set yet, set the endTimeMilli to the current system time and call update()
 //    with the night. There are several ways to implement this, and one is shown below:
@@ -142,7 +139,24 @@ class SleepTrackerViewModel(
         }
     }
 
-//  Implement update() using the same pattern as insert():
+    /*Assign each button a Transformations that tests it against the value of tonight.
+    The START button should be visible when tonight is null, the STOP button when tonight is not null,
+    and the CLEAR button if nights contains any nights:*/
+    // The state of the variables changes based on the state of tonight, so whenever tonight changes,
+    // these variables are updated.  Tonight is null at the beginning,so if that is the case, we
+    // want the start button to be visible. If tonight has a value, the stop is visible, and the
+    // clear button should only be visible when we have something to clear. 
+    val startButtonVisible = Transformations.map(tonight) {
+        null == it
+    }
+    val stopButtonVisible = Transformations.map(tonight) {
+        null != it
+    }
+    val clearButtonVisible = Transformations.map(nights) {
+        it?.isNotEmpty()
+    }
+
+    //  Implement update() using the same pattern as insert():
     private suspend fun update(night: SleepNight) {
         database.update(night)
     }
@@ -153,11 +167,13 @@ class SleepTrackerViewModel(
     * To manage our coroutines, we need a job. This ViewModelJob allows us to cancel all
     * coroutines started by this ViewModel when the viewModel when the ViewModel is no longer used
     * and destroyed so that we don't end up with coroutines that have no where to return to */
-         private var viewModelJob = Job()
+    private var viewModelJob = Job()
+
     // When the viewModel is destroyed, onCleared is called.
     // We tell the job to cancel all coroutines.
-      override fun onCleared() {
-          super.onCleared()
-          viewModelJob.cancel() }
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
 }
 
