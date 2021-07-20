@@ -38,7 +38,7 @@ class SleepTrackerViewModel(
 
     //Define a variable, nights. Then getAllNights() from the database and assign to the nights variable:
     // WE ALSO want to get all the nights in the database when we create the viewModel
-    private val nights = database.getAllNights()
+     val nights = database.getAllNights()
 
     //Add code to transform nights into a nightsString using the formatNights() function from Util.kt:
     val nightsString = Transformations.map(nights) { nights ->

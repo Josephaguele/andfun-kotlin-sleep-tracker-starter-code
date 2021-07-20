@@ -82,6 +82,19 @@ class SleepTrackerFragment : Fragment() {
         // set the current activity as the lifecycle owner of this binding
         binding.lifecycleOwner = this
 
+        //In SleepTrackerFragment, create a new SleepNightAdapter, and use binding to associate it with the RecyclerView:
+        val adapter = SleepNightAdapter()
+        binding.sleepList.adapter = adapter
+
+        // adding an observer
+        //Create an observer on sleepTrackerViewModel.nights that sets the Adapter when there is new data.
+        sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer
+        {
+            it?.let{
+                adapter.data = it
+            }
+        })
+
         // we add an observer for the snackbar
         sleepTrackerViewModel.showSnackBarEvent.observe(viewLifecycleOwner, Observer
         {
