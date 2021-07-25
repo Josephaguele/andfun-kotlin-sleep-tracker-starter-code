@@ -5,13 +5,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.convertDurationToFormatted
 import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
 
-class SleepNightAdapter : RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
+class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()){
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         //we use findViewById() to create properties sleepLength, quality, and qualityImage.
@@ -38,25 +40,12 @@ class SleepNightAdapter : RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
         }
     }
 
-    // define a data variable and assign it to a list of SleepNights
-    var data = listOf<SleepNight>()
-        /*In SleepNightAdapter, add a custom setter to data that calls notifyDataSetChanged()
-        and tell Kotlin to save the new value by setting field = value*/
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
-
-    //Override getItemCount() and have it return data.size.
-    override fun getItemCount(): Int {
-        return data.size
-    }
-
+ 
     /*onBindViewHolder is used for binding views to the ViewHolder*/
     //The function should retrieve the item from the data list,
     // and set holder.textView.text to item.sleepQuality.toString().
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = data[position]
+        val item = getItem(position)
         holder.bind(item)
     }
 
@@ -73,6 +62,22 @@ class SleepNightAdapter : RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
             val view = layoutInflater.inflate(R.layout.list_item_sleep_night, parent, false)
             return ViewHolder(view)
         }
+    }
+}
+/*The DiffUtil class is an optimized version of onNotifyDataSetChanged.
+* It allows the recycler view to update faster based on changes made while scrolling.
+* It implements two methods to do this
+* Method 1: areItemsTheSame - which checks if the items are the same by using the item id
+* Method 2: areContentsTheSame - which checks if the contents of the items are the same.*/
+// we create a new class SleepNightDiffCallback that extends DiffUtil.ItemCallback<SleepNight>.
+class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
+    //Two items are the same if their nightId values are equal.
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem.nightId == newItem.nightId
+    }
+    //Two items are the same if they have the same value, oldItem == newItem.
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        return oldItem == newItem
     }
 }
 
