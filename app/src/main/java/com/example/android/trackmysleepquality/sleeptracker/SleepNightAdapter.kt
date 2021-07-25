@@ -2,8 +2,6 @@ package com.example.android.trackmysleepquality.sleeptracker
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -17,19 +15,16 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
 
     // note that after the first refactor, the ViewHolder class still has view as its parameter.
     // I changed the name from view to binding based on the tutorial
-    class ViewHolder(binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        // In ViewHolder, replace findViewById calls with references to binding object fields,
-        // then inline them:
-        val sleepLength: TextView = binding.sleepLength
-        val quality: TextView = binding.qualityString
-        val qualityImage: ImageView = binding.qualityImage
-
-        fun bind(item: SleepNight) {
+        fun bind(item: SleepNight)
+        {
             val res = itemView.context.resources
-            sleepLength.text = convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
-            quality.text = convertNumericQualityToString(item.sleepQualityRating, res)
-            qualityImage.setImageResource(
+                // In ViewHolder, replace findViewById calls with references to binding object fields,
+                // then inline them:
+            binding.sleepLength.text = convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
+            binding.qualityString.text = convertNumericQualityToString(item.sleepQualityRating, res)
+            binding.qualityImage.setImageResource(
                 when (item.sleepQualityRating) {
                     0 -> R.drawable.ic_sleep_0
                     1 -> R.drawable.ic_sleep_1
