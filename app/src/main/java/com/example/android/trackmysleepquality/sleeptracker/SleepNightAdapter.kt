@@ -18,16 +18,16 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
     // note that after the first refactor, the ViewHolder class still has view as its parameter.
     // I changed the name from view to binding based on the tutorial
     class ViewHolder(binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
-        //we use findViewById() to create properties sleepLength, quality, and qualityImage.
-        val sleepLength: TextView = itemView.findViewById(R.id.sleep_length)
-        val quality: TextView = itemView.findViewById(R.id.quality_string)
-        val qualityImage: ImageView = itemView.findViewById(R.id.quality_image)
-        
+
+        // In ViewHolder, replace findViewById calls with references to binding object fields,
+        // then inline them:
+        val sleepLength: TextView = binding.sleepLength
+        val quality: TextView = binding.qualityString
+        val qualityImage: ImageView = binding.qualityImage
 
         fun bind(item: SleepNight) {
             val res = itemView.context.resources
-            sleepLength.text =
-                convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
+            sleepLength.text = convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
             quality.text = convertNumericQualityToString(item.sleepQualityRating, res)
             qualityImage.setImageResource(
                 when (item.sleepQualityRating) {
