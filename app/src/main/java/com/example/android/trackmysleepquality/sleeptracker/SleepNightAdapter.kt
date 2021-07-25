@@ -15,26 +15,13 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
 
     // note that after the first refactor, the ViewHolder class still has view as its parameter.
     // I changed the name from view to binding based on the tutorial
-    class ViewHolder(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
-
+    class ViewHolder(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root)
+    {
         fun bind(item: SleepNight)
-        {
-            val res = itemView.context.resources
-                // In ViewHolder, replace findViewById calls with references to binding object fields,
-                // then inline them:
-            binding.sleepLength.text = convertDurationToFormatted(item.startTimeMilli, item.endTimeMilli, res)
-            binding.qualityString.text = convertNumericQualityToString(item.sleepQualityRating, res)
-            binding.qualityImage.setImageResource(
-                when (item.sleepQualityRating) {
-                    0 -> R.drawable.ic_sleep_0
-                    1 -> R.drawable.ic_sleep_1
-                    2 -> R.drawable.ic_sleep_2
-                    3 -> R.drawable.ic_sleep_3
-                    4 -> R.drawable.ic_sleep_4
-                    5 -> R.drawable.ic_sleep_5
-                    else -> R.drawable.ic_sleep_active
-                }
-            )
+        {/*Replace the code in SleepNightAdapter.ViewHolder.bind with a single binding to the
+        SleepNight item, followed by executePendingBindings():*/
+            binding.sleep = item
+            binding.executePendingBindings()
         }
     }
 
