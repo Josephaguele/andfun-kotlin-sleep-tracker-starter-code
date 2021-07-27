@@ -5,17 +5,23 @@
     xmlns:tools="http://schemas.android.com/tools">
     <!-- Enabling data binding -->
     <data>
-
         <variable
             name="sleep"
             type="com.example.android.trackmysleepquality.database.SleepNight" />
 
+        <!--We wire up the click listener to class to list_item_sleep_night.xml by creating new variable. -->
+        <variable
+            name="clickListener"
+            type="com.example.android.trackmysleepquality.sleeptracker.SleepNightListener"/>
     </data>
 
+    <!--In order to tell the view to call the click listener, we add the click listener
+     to onClick property of the ConstraintLayout. -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:onClick="@{() -> clickListener.onClick(sleep)}">
 
         <ImageView
             android:id="@+id/quality_image"

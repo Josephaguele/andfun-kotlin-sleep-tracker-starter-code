@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -70,7 +71,6 @@ class SleepTrackerFragment : Fragment() {
         val manager = GridLayoutManager(activity, 3)
         binding.sleepList.layoutManager = manager
 
-
         // We add an observer here to navigate to SleepQuality
         sleepTrackerViewModel.navigateToSleepQuality.observe(viewLifecycleOwner,Observer
         {
@@ -89,8 +89,11 @@ class SleepTrackerFragment : Fragment() {
         // set the current activity as the lifecycle owner of this binding
         binding.lifecycleOwner = this
 
+
         //In SleepTrackerFragment, create a new SleepNightAdapter, and use binding to associate it with the RecyclerView:
-        val adapter = SleepNightAdapter()
+        val adapter = SleepNightAdapter(SleepNightListener { nightId ->
+            Toast.makeText(context, "${nightId}", Toast.LENGTH_LONG).show()
+        })
         binding.sleepList.adapter = adapter
 
         // adding an observer

@@ -5,23 +5,21 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.android.trackmysleepquality.R
-import com.example.android.trackmysleepquality.convertDurationToFormatted
-import com.example.android.trackmysleepquality.convertNumericQualityToString
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
-
-class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()){
+//We add a SleepNightListener reference to the SleepNightAdapter class declaration.
+class SleepNightAdapter(val clickListener: SleepNightListener) : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()){
 
     // note that after the first refactor, the ViewHolder class still has view as its parameter.
     // I changed the name from view to binding based on the tutorial
     class ViewHolder(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root)
     {
-        fun bind(item: SleepNight)
+        fun bind(item: SleepNight, clickListener: SleepNightListener)
         {/*Replace the code in SleepNightAdapter.ViewHolder.bind with a single binding to the
         SleepNight item, followed by executePendingBindings():*/
             binding.sleep = item
             binding.executePendingBindings()
+            binding.clickListener = clickListener // passing clickListener to bind
         }
     }
 
@@ -31,7 +29,8 @@ class SleepNightAdapter : ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(
     // and set holder.textView.text to item.sleepQuality.toString().
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
+
+        holder.bind(item, clickListener) // add click listener
     }
 
     /*In SleepNightAdapter, onCreateViewHolder(), inflate the text_item_view layout and return the ViewHolder.
@@ -65,6 +64,11 @@ class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
     override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
         return oldItem == newItem
     }
+}
+
+// IMPLEMENTING A CLICK LISTENER FOR RECYCLERVIEW
+class SleepNightListener(val clickListener: (sleepId: Long) -> Unit) {
+    fun onClick(night: SleepNight) = clickListener(night.nightId)
 }
 
 
