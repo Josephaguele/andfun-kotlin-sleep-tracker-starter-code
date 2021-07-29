@@ -185,13 +185,22 @@ class SleepTrackerViewModel(
     * To manage our coroutines, we need a job. This ViewModelJob allows us to cancel all
     * coroutines started by this ViewModel when the viewModel when the ViewModel is no longer used
     * and destroyed so that we don't end up with coroutines that have no where to return to */
-    private var viewModelJob = Job()
 
-    // When the viewModel is destroyed, onCleared is called.
-    // We tell the job to cancel all coroutines.
-    override fun onCleared() {
-        super.onCleared()
-        viewModelJob.cancel()
+
+    /* we add a handler for the click event.
+    we also need to add a MutableLiveData object to control the navigation.*/
+    private val _navigateToSleepDataQuality = MutableLiveData<Long>()
+    val navigateToSleepDataQuality
+        get() = _navigateToSleepDataQuality
+
+    //we define a method to initiate and complete navigation.
+    //Initiate navigation by setting _navigateToSleepDataQuality.value to id:
+    fun onSleepNightClicked(id: Long){
+        _navigateToSleepDataQuality.value = id
     }
+    //and then set it to null once navigation is completed:
+    fun onSleepDataQualityNavigated() {
+         _navigateToSleepDataQuality.value = null
+     }
 }
 

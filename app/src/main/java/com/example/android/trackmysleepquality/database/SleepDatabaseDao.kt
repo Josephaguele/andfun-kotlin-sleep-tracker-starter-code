@@ -76,6 +76,12 @@ For example, with the new end-time or a sleep quality rating.
      ordered by nightId in descending order. Use LIMIT 1 to return only one element.*/
     @Query("SELECT * FROM daily_sleep_quality_table ORDER BY nightId DESC LIMIT 1")
     suspend fun getTonight(): SleepNight?
+
+    /**
+     * Selects and returns the night with given nightId.
+     */
+    @Query("SELECT * from daily_sleep_quality_table WHERE nightId = :key")
+    fun getNightWithId(key: Long): LiveData<SleepNight>
 }
 
 
